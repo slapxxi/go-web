@@ -11,15 +11,9 @@ const STATIC_DIR = "/public"
 const STATIC_PREFIX = "/static/"
 
 func main() {
-	wd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	publicDir := filepath.Join(wd, STATIC_DIR)
-
 	mux := http.NewServeMux()
 
-	fileHandler := http.FileServer(http.Dir(publicDir))
+	fileHandler := http.FileServer(http.Dir(getPublicDir()))
 
 	mux.Handle(STATIC_PREFIX, http.StripPrefix(STATIC_PREFIX, fileHandler))
 	mux.HandleFunc("/", indexHandler)
@@ -39,4 +33,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	templates := template.Must(template.ParseFiles(files...))
 	templates.ExecuteTemplate(w, "layout", []byte{})
+}
+
+func getPublicDir() string {
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	return filepath.Join(wd, STATIC_DIR)
 }
