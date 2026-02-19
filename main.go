@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"os"
@@ -17,22 +18,29 @@ func main() {
 
 	mux.Handle(STATIC_PREFIX, http.StripPrefix(STATIC_PREFIX, fileHandler))
 	mux.HandleFunc("/", indexHandler)
+	mux.HandleFunc("POST /threads/{id}", threadsHandler)
 
 	server := &http.Server{
 		Addr:    "0.0.0.0:8080",
 		Handler: mux,
 	}
 
-	server.ListenAndServe()
+	server.ListenAndServeTLS("cert.pem", "key.pem")
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("serving index")
 	files := []string{
 		"templates/layout.html",
 		"templates/index.html",
 	}
 	templates := template.Must(template.ParseFiles(files...))
 	templates.ExecuteTemplate(w, "layout", []byte{})
+}
+
+func threadsHandler(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	w.Write([]byte(id))
 }
 
 func getPublicDir() string {
